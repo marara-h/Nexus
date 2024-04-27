@@ -1,0 +1,30 @@
+name: Upload 
+on: 
+  release: 
+  
+env:
+  VERSION_TAG: ${{ github.event.release.tag_name}}
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: release-tag
+              run : echo ${{ env.TRIGGER }}
+              
+            - name: Build
+              uses: actions/upload-artifact@v4
+              with:
+                name: ${{ env.VERSION_TAG }}
+                path: ./
+
+            - name: Download 
+              uses: actions/download-artifact@v4
+              
+
+            - name: Nexus/prod 
+              run : curl --fail -u ${{secrets.NEXUS_USERNAME}}:${{secrets.NEXUS_PASSWORD}} --upload-file ${{env.VERSION_TAG}}  'https://7953-78-109-67-172.ngrok-free.app/repository/prod/'
