@@ -24,7 +24,6 @@ jobs:
 
             - name: Download 
               uses: actions/download-artifact@v4
-              
 
             - name: Nexus/prod 
               run : curl --fail -u ${{secrets.NEXUS_USERNAME}}:${{secrets.NEXUS_PASSWORD}} --upload-file ${{env.VERSION_TAG}} 'https://7953-78-109-67-172.ngrok-free.app/repository/prod/'
