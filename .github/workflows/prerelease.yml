@@ -1,0 +1,32 @@
+name: Upload 
+
+on: 
+  push:
+  workflow_dispatch: 
+  
+env:
+  TRIGGER: ${{ github.event_name }}
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              
+            - name: Build 
+              uses: actions/upload-artifact@v4
+              with:
+                path: ./
+
+            - name: Download 
+              uses: actions/download-artifact@v4 
+            
+
+            - name: Send to Nexus/dev repository
+              if  : ${{ env.TRIGGER }} == 'push'
+              run : curl --fail -u ${{secrets.NEXUS_USERNAME}}:${{secrets.NEXUS_PASSWORD}} --upload-file artifact  'https://7953-78-109-67-172.ngrok-free.app/repository/dev/'
+            - name: Send to Nexus/test repo  
+              if  : ${{ env.TRIGGER }} == 'workflow_dispatch'
+              run : curl --fail -u ${{secrets.NEXUS_USERNAME}}:${{secrets.NEXUS_PASSWORD}} --upload-file artifact  'https://7953-78-109-67-172.ngrok-free.app/repository/test/'
