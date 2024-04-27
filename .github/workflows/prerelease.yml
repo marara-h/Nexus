@@ -1,24 +1,32 @@
-name: Prerelease
+name: Upload Artifact
 
-on:
+on: 
   push:
-    branches:
-      - main
+  workflow_dispatch: 
+  
+env:
+  TRIGGER: ${{ github.event_name }}
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+    build:
+        runs-on: ubuntu-latest
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+        steps:
+            - name: Checkout..
+              uses: actions/checkout@v4.1.1
+              
+            - name: Build artifact
+              uses: actions/upload-artifact@v4
+              with:
+                path: ./
 
-    - name: Build and push Docker image
-      env:
-        NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
-        NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      run: |
-        docker build -t myapp:dev .
-        docker tag myapp:dev your-nexus-repo-url/dev/myapp:latest
-        docker login -u $NEXUS_USERNAME -p $NEXUS_PASSWORD your-nexus-repo-url
-        docker push your-nexus-repo-url/dev/myapp:latest
+            - name: Download artifact
+              uses: actions/download-artifact@v4 
+            
+
+            - name: Send to Nexus/dev repository
+              if  : ${{ env.TRIGGER }} == 'push'
+              run : curl --fail -u ${{secrets.NEXUS_UNAME}}:${{secrets.NEXUS_PSW}} --upload-file artifact  'https://d97f-46-162-196-212.ngrok-free.app/repository/dev/'
+            - name: Send to Nexus/test repo  
+              if  : ${{ env.TRIGGER }} == 'workflow_dispatch'
+              run : curl --fail -u ${{secrets.NEXUS_UNAME}}:${{secrets.NEXUS_PSW}} --upload-file artifact  'https://d97f-46-162-196-212.ngrok-free.app/repository/test/'
